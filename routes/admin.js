@@ -2,7 +2,7 @@ const {Router} = require("express");
 const adminRouter = Router();
 const { z } = require("zod");
 const bcrypt = require("bcrypt");
-const {adminModel} = require("../db");
+const {adminModel, courseModel} = require("../db");
 const jwt = require("jsonwebtoken");
 const { adminMiddleware } = require("../middleware/admin");
 const JWT_ADMIN_SECRET = process.env.JWT_ADMIN_SECRET;
@@ -89,15 +89,60 @@ adminRouter.post("/course", adminMiddleware, async (req, res) => {
     } catch (err) {
         res.json({
             message: "Error creating course",
-            error: err
+            error: err.message
         });
     }
 });
 
-adminRouter.put("/course", (req, res) => {});
+adminRouter.put("/course", adminMiddleware, async (req, res) => {
+    const adminId = req.id;
 
-adminRouter.get("/course", (req, res) => {
-    res.json({message: "admin course"});
+    const { title, description, price, imageUrl, courseId} = req.body;
+
+    try {
+        const result = await courseModel.updateOne({
+            courseId,
+            adminId
+        },
+        {
+            title, description, price, imageUrl
+        }); 
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                message: "Course not found"
+            });
+        }
+
+        res.json({
+            message: "Course updated",
+            courseId,
+        });
+    } catch (err) {
+        res.json({
+            message: "Error editing course",
+            error: err
+        });
+    }    
+});
+
+adminRouter.get("/course", adminMiddleware, async (req, res) => {
+    const adminId = req.id;
+
+    try {
+        const courses = await courseModel.find({
+            adminId
+        }); 
+
+        res.json({
+            courses
+        });
+    } catch (err) {
+        res.json({
+            message: "Error getting courses",
+            error: err
+        });
+    }    
 });
 
 module.exports = {adminRouter};
