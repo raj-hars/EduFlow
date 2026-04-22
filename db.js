@@ -28,7 +28,7 @@ const courseSchema = new mongoose.Schema({
     description: String,
     price: Number,
     imageUrl: String,
-    AdminId: ObjectId,
+    adminId: ObjectId,
 });
 
 const purchaseSchema = new mongoose.Schema({

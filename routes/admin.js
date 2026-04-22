@@ -2,7 +2,9 @@ const {Router} = require("express");
 const adminRouter = Router();
 const { z } = require("zod");
 const bcrypt = require("bcrypt");
+const {adminModel} = require("../db");
 const jwt = require("jsonwebtoken");
+const { adminMiddleware } = require("../middleware/admin");
 const JWT_ADMIN_SECRET = process.env.JWT_ADMIN_SECRET;
 
 adminRouter.post("/signup", async (req, res) => {
@@ -59,7 +61,7 @@ adminRouter.post("/login", async (req, res) => {
     if (user && isMatch) {
         const token = jwt.sign({
             id: user._id,
-        }, JWT_USER_SECRET, {expiresIn: "7d"});
+        }, JWT_ADMIN_SECRET, {expiresIn: "7d"});
 
         res.json({token});
     }
@@ -70,7 +72,27 @@ adminRouter.post("/login", async (req, res) => {
     }    
 });
 
-adminRouter.post("/course", (req, res) => {});
+adminRouter.post("/course", adminMiddleware, async (req, res) => {
+    const adminId = req.id;
+
+    const { title, description, price, imageUrl} = req.body;
+
+    try {
+        const course = await courseModel.create({
+            title, description, price, imageUrl, adminId
+        }); 
+
+        res.json({
+            message: "Course created",
+            courseId: course._id,
+        });
+    } catch (err) {
+        res.json({
+            message: "Error creating course",
+            error: err
+        });
+    }
+});
 
 adminRouter.put("/course", (req, res) => {});
 
