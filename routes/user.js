@@ -1,9 +1,10 @@
 const express = require("express");
-const {userModel} = require("../db");
 const userRouter = express.Router();
 const { z } = require("zod");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { userModel, purchaseModel } = require("../db");
+const { userMiddleware } = require("../middleware/user");
 const JWT_USER_SECRET = process.env.JWT_USER_SECRET; 
 
 
@@ -14,9 +15,9 @@ userRouter.post("/signup", async (req, res) => {
         firstName: z.string().max(100),
         lastName: z.string().max(100),
     });
- 
+ console.log(req.body);
     const parsedData = requiredBody.safeParse(req.body);
-               
+                  
     if (!parsedData.success) {
         res.status(400).json({
             message: "Incorrect format",
@@ -70,9 +71,15 @@ userRouter.post("/login", async (req, res) => {
     }
 });
 
-userRouter.get("/courses", (req, res) => {
+userRouter.get("/courses", userMiddleware, async (req, res) => {
+    const userId = req.id;
+
+    const courses = await purchaseModel.find({
+        userId
+    })
+
     res.json({
-        message: "Purchased courses"
+        courses
     });
 });
 

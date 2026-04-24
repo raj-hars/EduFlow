@@ -9,7 +9,7 @@ function userMiddleware(req, res, next) {
         req.id = decoded.id;
         next();
     } catch (err) {
-        res.json(403).json({
+        res.status(403).json({
             message: "You are not signed in"
         });
     }
