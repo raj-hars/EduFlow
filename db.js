@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema({
     password: String,
     firstName: String,
     lastName: String,
+    courses: [{
+        type: ObjectId,
+        ref: "course"
+    }]
 });
 
 const adminSchema = new mongoose.Schema({
@@ -31,19 +35,12 @@ const courseSchema = new mongoose.Schema({
     adminId: ObjectId,
 });
 
-const purchaseSchema = new mongoose.Schema({
-    courseId: ObjectId,
-    userId: ObjectId,
-});
-
 const userModel = mongoose.model("user", userSchema);
 const adminModel = mongoose.model("admin", adminSchema);
 const courseModel = mongoose.model("course", courseSchema);
-const purchaseModel = mongoose.model("purchase", purchaseSchema);
 
 module.exports = {
     userModel,
     adminModel,
     courseModel,
-    purchaseModel,
 };

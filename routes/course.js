@@ -1,5 +1,5 @@
 const express = require("express");
-const { courseModel, purchaseModel } = require("../db");
+const { courseModel, userModel } = require("../db");
 const { userMiddleware } = require("../middleware/user");
 const courseRouter = express.Router();
 
@@ -15,10 +15,12 @@ courseRouter.post("/purchase", userMiddleware, async (req, res) => {
     const userId = req.id;
     const courseId = req.body.courseId;
 
-    await purchaseModel.create({
-        userId,
-        courseId,
-    });
+    await userModel.updateOne(
+        { _id: userId },
+        {   // $addToSet: Only adds the ID if it doesn't already exist in the array (automatic uniqueness)
+            $addToSet: { courses: courseId }
+        }
+    );
 
     res.json({
         message: "Course purchase successful"
